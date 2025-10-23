@@ -1,0 +1,701 @@
+---
+title: "Chpater 5 : Infomation Criteria"
+subtitle: "5.1.Information Criteria & 5.2.Efficient Estimation and the Fisher Information Matrix"
+author: "Gayoung Moon"
+date: "2025-03-16"
+institute: Descendants of Lagrange \newline School of Mathematics, Statistics and Data Science \newline Sungshin Women’s University
+fonttheme: "serif"
+fontsize: 8pt
+output:
+  beamer_presentation:
+    latex_engine: xelatex 
+    theme: "metropolis"
+header-includes:
+  - \input{header_includes.tex}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+set.seed(1)
+```
+
+# Information Criteria
+
+
+## Information Criterion
+
+- **Information criterion** is an index for evaluating the validity of a statistical model from observation data.
+\vt
+\vt
+
+- Information criterion refers to the evaluation of:
+\vt
+  - Fitness: how much the statistical model explains the data.
+\vt
+
+  - Simplicity: how simple the statistical model is.
+
+
+
+## One of the Important Problems in Linear Regression
+
+- One of the important problems in **linear regression**: \newline To select some $p$ covariates based on $N$ observations $(x_1, y_1), \cdots, (x_N, y_N) \in \mathbb{R}^p \times \mathbb{R}$.
+\vt
+\vt
+
+- If there are too many covariates, then they overfit the data and try to explain the noise fluctuation by other covariates.
+
+
+
+## Subset $S$ used as RSS$(S)$
+
+- It isn't easy to choose $S \subseteq \{1, \cdots, p\}$ from the $2^p$ subsets when $p$ is large.
+\vt
+
+  - $2^p$ subsets: $\{\}, \{ 1\}, \cdots, \{ p\}, \{1, 2 \}, \cdots, \{1, \cdots, p \}$.
+\vt
+\vt
+
+- We express the fitness and simplicity by the residual sum of square(RSS) value RSS$(S)$.
+\vt
+
+  - **RSS$(S)$** is based on the subset $S$ and the cardinality $k(S) := \vert S \vert$ of $S$.
+
+
+
+## Property of the Subset $S$
+
+$$
+S \subseteq S' \Longrightarrow
+\begin{cases}
+\text{RSS}(S) \geq \text{RSS}(S') \\
+k(S) \leq k(S')
+\end{cases}.
+$$
+
+- It means that the larger the $k=k(S)$, the smaller $\hat{\sigma}_k^2 = \frac{\text{RSS}_k}{N}$ is, where $\text{RSS}_k := \min_{k(S)=k} \text{RSS}(S)$.
+
+
+
+# AIC and BIC
+
+
+## Defination of the AIC and BIC
+
+- Akaike's Information Criterion(AIC) and the Bayesian Information Criterion(BIC) are well known.
+\vt
+\vt
+
+- The AIC and BIC are defined by:
+\vt
+
+  - AIC $:= N \log{\hat{\sigma}_k^2} + 2k$.
+\vt
+
+  - BIC $:= N \log{\hat{\sigma}_k^2} + k \log{N}$.
+\vt
+\vt
+
+- The coefficient of determination is:
+\vt
+
+  - $1 - \frac{\text{RSS}_k}{\text{TSS}}$.
+\vt
+
+  - It increases monotonically with $k$ and reaches its maximum value at $k= p$.
+
+
+
+## Properties of the AIC and BIC
+
+- The AIC and BIC values:
+\vt
+
+  - They decrease before reaching the minimum at some $0 \leq k \leq p$.
+\vt
+
+  - In the case of $k>p$, they increase.
+\vt
+\vt
+
+- The adjusted coefficient of determination maximizes $1- \frac{\text{RSS}_k/(N-k-1)}{\text{TSS}/(N-1)}$ at some $0 \leq k \leq p$.
+\vt
+
+  - It is often much larger than those of the AIC and BIC.
+
+
+
+# Example 45, 46
+
+
+## [Example 45] Finding the Set of Covariates that minimizes the AIC and BIC
+
+- In 'RSS.min(X, y, T)' function:
+\vt
+  - Input values: \newline
+  X: Independent variables matrix $(n \times p)$, \newline
+  y: Dependent variable vector $(n \times 1)$, \newline
+  T: A combination(matrix) of X to select from.
+  \vt
+
+  - Output values: \newline
+  value: Minimum of the RSS, \newline
+  set: Combination of X with minimum RSS.
+  \vt
+  \vt
+  
+- 'RSS.min(X, y, T)' function is using the following formula:
+
+$$
+RSS = \sum^N_{i=1}(y_i - \hat{y_i})^2.
+$$
+
+
+
+## [Example 45] Finding the Set of Covariates that minimizes the AIC and BIC (Contd.)
+
+- In 'AIC(BIC).min' function:
+\vt
+  
+  - 'combn(1:p, k)' generates all combinations of $k$ variables out of a total of $p$.
+  \vt
+  
+  - Output values: \newline
+  AIC(BIC).min: Minimum of the AIC/BIC, \newline
+  set.min: The combination of variables with the lowest AIC/BIC.
+  \vt
+  \vt
+
+- 'AIC(BIC).min' function is using the following formula:
+
+$$
+\begin{aligned}
+\text{AIC} &:= N \log{\hat{\sigma}_k^2} + 2k, \\
+\text{BIC} &:= N \log{\hat{\sigma}_k^2} + k \log{N}.
+\end{aligned}
+$$
+
+
+
+## [Example 45] Finding the Set of Covariates that minimizes the AIC and BIC (Contd.)
+
+- In the AIC case:
+
+```{r ex45-1, echo= TRUE, eval= FALSE}
+RSS.min=function(X,y,T){
+  m=ncol(T); S.min=Inf
+  for(j in 1:m){
+    q=T[,j]; S=sum((lm(y~X[,q])$fitted.values - y)^2)/n
+  if(S<S.min){S.min=S; set.q=q}
+  }
+return(list(value=S.min,set=set.q))}
+library(MASS)   # We use the Boston data set in the R MASS package.
+df=Boston; X=as.matrix(df[,c(1,3,5,6,7,8,10,11,12,13)]); y=df[[14]];
+# We assume the 'MEDV' variable is responses
+# and the remaining variables are covariates.
+p=ncol(X); n=length(y)
+AIC.min=Inf
+for(k in 1:p){
+  T=combn(1:p,k); res=RSS.min(X,y,T)
+  AIC= n*log(res$value/n)+2*k ##
+  if(AIC<AIC.min){AIC.min=AIC; set.min= res$set}}
+```
+
+
+
+## [Example 45] Finding the Set of Covariates that minimizes the AIC and BIC (Contd.)
+
+- AIC:
+
+```{r ex45-2, echo= FALSE, eval= TRUE}
+RSS.min=function(X,y,T){
+  m=ncol(T); S.min=Inf
+  for(j in 1:m){
+    q=T[,j]; S=sum((lm(y~X[,q])$fitted.values - y)^2)/n
+  if(S<S.min){S.min=S; set.q=q}
+  }
+return(list(value=S.min,set=set.q))
+}
+
+library(MASS)
+df=Boston; X=as.matrix(df[,c(1,3,5,6,7,8,10,11,12,13)]); y=df[[14]];
+p=ncol(X); n=length(y)
+AIC.min=Inf
+for(k in 1:p){
+  T=combn(1:p,k); res=RSS.min(X,y,T)
+  AIC= n*log(res$value/n)+2*k
+  if(AIC<AIC.min){AIC.min=AIC; set.min= res$set}
+}
+
+AIC.min
+set.min
+```
+\vt
+
+- In the BIC case:
+\vt
+  - If we change the line '$\text{n}*\text{log(S.min)} + 2*\text{k}$' marked by **##** in the AIC code with '$\text{n}*\text{log(S.min)} + \text{k}*\text{log(N)}$', then the quantity becomes the BIC.
+\vt
+
+- BIC:
+```{r ex45-4, echo= FALSE, eval= TRUE}
+RSS.min=function(X,y,T){
+  m=ncol(T); S.min=Inf
+  for(j in 1:m){
+    q=T[,j]; S=sum((lm(y~X[,q])$fitted.values - y)^2)/n
+  if(S<S.min){S.min=S; set.q=q}
+  }
+return(list(value=S.min,set=set.q))
+}
+
+library(MASS)
+df=Boston; X=as.matrix(df[,c(1,3,5,6,7,8,10,11,12,13)]); y=df[[14]];
+p=ncol(X); n=length(y)
+BIC.min=Inf
+for(k in 1:p){
+  T=combn(1:p,k); res=RSS.min(X,y,T)
+  BIC= n*log(res$value/n)+k*log(n)
+  if(BIC<BIC.min){BIC.min=BIC; set.min= res$set}
+}
+
+BIC.min
+set.min
+```
+\vt
+
+- Both AIC and BIC values have negative values. \newline
+$\rightarrow$ It means that AIC and BIC may not be suitable as criteria for model selection because they are not close to 0.
+
+
+
+## [Example 46] The Plot of Changes of AIC/BIC with # of Covariates
+
+```{r ex46 plot, echo= FALSE}
+RSS.min=function(X,y,T){
+  m=ncol(T); S.min=Inf
+  for(j in 1:m){
+    q=T[,j]; S=sum((lm(y~X[,q])$fitted.values - y)^2)/n
+    if(S<S.min){S.min=S; set.q=q}
+  }
+  return(list(value=S.min,set=set.q))
+}
+
+library(MASS)
+df=Boston; X=as.matrix(df[,c(1,3,5,6,7,8,10,11,12,13)]); y=df[[14]];
+n=nrow(X); p=ncol(X)
+IC=function(k){
+  T=combn(1:p,k);
+  res=RSS.min(X,y,T)
+  AIC= n*log(res$value/n)+2*k;
+  BIC= n*log(res$value/n)+k*log(n)
+  return(list(AIC=AIC,BIC=BIC))
+}
+AIC.seq=NULL; BIC.seq=NULL;
+for(k in 1:p){AIC.seq=c(AIC.seq, IC(k)$AIC); BIC.seq=c(BIC.seq, IC(k)$BIC)}
+
+plot(1:p, ylim=c(min(AIC.seq),max(BIC.seq)), type="n",xlab="# of variables",
+     ylab="AIC/BIC", main= "Changes of AIC/BIC with # of Covariates")
+lines(AIC.seq,col="red"); lines(BIC.seq,col="blue")
+legend("topright",legend=c("AIC","BIC"), col=c("red","blue"), lwd=1, cex=.8)
+```
+
+- The BIC is larger than the AIC, but the BIC chooses a simpler model with fewer variables than the AIC.
+
+
+
+# Efficient Estimator and the Fisher Infromation Matrix
+
+
+## Probability Density Function of the Observations
+
+- Suppose that:
+\vt
+
+  - $x_1, \cdots, x_N \in \mathbb{R}^{p+1}$
+\vt
+
+  - $y_1, \cdots, y_N \in \mathbb{R}$
+\vt
+
+  - Random variables: $e_1, \cdots, e_n \, = \varepsilon \, \sim N(0, \sigma^2)$
+\vt
+
+  - Unknown constants: $\beta_0 \in \mathbb{R}, \, \beta \in \mathbb{R}^p \; \rightarrow \, \beta \in \mathbb{R}^{p+1}$
+\vt
+
+  - In other words,
+
+$$
+X = \begin{bmatrix} x_1 \\
+\vdots \\
+x_N \end{bmatrix} \in \mathbb{R}^{N \times (p+1)}, \,
+y= \begin{bmatrix} y_1 \\
+\vdots \\
+y_N \end{bmatrix} \in \mathbb{R}^N, \,
+\beta = \begin{bmatrix} \beta_0 \\
+\beta_1 \\
+\vdots \\
+\beta_p \end{bmatrix} \in \mathbb{R}^{p+1}.
+$$
+\vt
+
+- The observations have been generated by the realizations $y_i= x_i \beta + \beta_0 + \varepsilon, \, i= 1, \cdots, N$ with random variables and unknown constants.
+
+
+
+## Probability Density Function of the Observations (Contd.)
+
+- When $f(y|x, \beta)$ follows a multivariate Gaussian distribution, the probability density function(PDF) can be written as follows:
+\vt
+
+$$
+f(y|x, \beta) := \frac{1}{\sqrt{(2\pi \sigma^2)^{N}}} \exp \Big\{ -\frac{1}{2\sigma^2} \lVert y - x \beta \rVert^2 \Big\}.
+$$
+
+
+
+## The Value of $\hat{\beta}^{LSE}$ and the Likelihood
+
+- $y = X\beta + \varepsilon$
+
+- In the **least squares method**, we estimated $\beta$ by:
+
+$$
+\hat{\beta}^{LSE}= (X^{\top}X)^{-1}X^{\top}y.
+$$
+\vt
+
+- $\hat{\beta}^{LSE}$ coincides with the $\beta \in \mathbb{R}^{p+1}$ that maximizes the likelihood
+
+$$
+\begin{aligned}
+L :&= \prod^N_{i=1}f(y_i|x_i, \beta) \\
+&= \prod^N_{i=1} \Bigg( \frac{1}{\sqrt{(2 \pi \sigma^2)}} \exp \Big\{ -\frac{1}{2\sigma^2} (y_i - x_i \beta)^2 \Big\} \Bigg).
+\end{aligned}
+$$
+
+
+
+## Caculating log-likelihood
+
+- The log-likelihood is written by:
+
+$$
+\begin{aligned}
+\ell :&= \log{L} \\
+&= \log{\prod^N_{i=1} \Bigg( \frac{1}{\sqrt{(2 \pi \sigma^2)}} \exp \Big\{ -\frac{1}{2\sigma^2} (y_i - x_i \beta)^2 \Big\} \Bigg)} \\
+&= \log (2\pi \sigma^2)^{-\frac{N}{2}} + \log \prod^N_{i=1} \exp \Big\{ -\frac{1}{2\sigma^2} (y_i - x_i \beta)^2 \Big\} \\
+&= -\frac{N}{2} \log(2 \pi \sigma^2) - \prod^N_{i=1} \frac{1}{2 \sigma^2} (y_i - x_i \beta)^2 \\
+&= -\frac{N}{2} \log(2 \pi \sigma^2) - \frac{1}{2 \sigma^2} \lVert y - X \beta \rVert^2.
+\end{aligned}
+$$
+\vt
+
+- If $\sigma^2 > 0$ is fixed, \newline
+maximizing $l$ is equivalent to minimizing $\lVert y - X \beta \rVert^2$.
+
+
+
+## Differentiate log-likelihood with $\sigma^2$
+  
+- If we partially differentiate $\ell$ w.r.t. $\sigma^2$:
+  
+$$
+\begin{aligned}
+\frac{\partial \ell}{\partial \sigma^2}
+&= \frac{\partial}{\partial \sigma^2} \Big( -\frac{N}{2} \log{(2 \pi \sigma^2)} - \frac{1}{2 \sigma^2} \lVert y - X \beta \rVert^2 \Big) \\
+&= \frac{\partial}{\partial \sigma^2} \Big( -\frac{N}{2} \log{(2 \pi \sigma^2)} \Big) - \frac{\partial}{\partial \sigma^2} \Big( \frac{1}{2 \sigma^2} \lVert y - X \beta \rVert^2 \Big) \\
+&= -\frac{N}{2}  \frac{1}{2 \pi \sigma^2}  2 \pi - \lVert y - X \beta \rVert^2 \big(-\frac{1}{2} \big) \frac{1}{(\sigma^2)^2} \\
+&= - \frac{N}{2\sigma^2} + \frac{\lVert y - X \beta \rVert^2}{2(\sigma^2)^2} = 0.
+\end{aligned}
+$$
+  
+  
+
+## Differentiate log-likelihood with $\sigma^2$ (Contd.)
+  
+- Using $\hat{\beta}= (X^{\top}X)^{-1}X^{\top}y$, we find:
+
+$$
+\hat{\sigma}^2 := \frac{1}{N} \lVert y - X \hat{\beta} \rVert^2 = \frac{1}{N} \lVert y - \hat{y} \rVert^2 = \frac{RSS}{N}.
+$$
+\vt
+\vt
+
+- It is the maximum likelihood estimate of $\hat{\sigma}^2$.
+
+
+
+## Efficient Estimator and the Fisher Information Matrix
+
+- Efficient Estimator:
+\vt
+  - When there are multiple unbiased estimators, the estimator with the smallest variance is called an efficient estimator.
+\vt
+\vt
+\vt
+
+- Let $\nabla \ell$ be the vector consisting of $\frac{\partial \ell}{\partial \beta_j}$, $j= 0, 1, \cdots, p$, \newline
+$\rightarrow$ The fisher information matrix: \newline The covariance matrix $J$ of $\nabla \ell$ divided by $N$.
+
+
+
+## Differentiation of the Score Function
+
+- For $f^N(y|x, \beta) := \prod^N_{i=1} f(y_i|x_i, \beta)$,
+
+$$
+\begin{aligned}
+\nabla \ell &= \frac{\nabla f^N(y|x, \beta)}{f^N(y|x, \beta)} \\
+&= \frac{\nabla \prod^N_{i=1} f(y_i|x_i, \beta)}{f^N(y|x, \beta)} \\
+&= \frac{\nabla \prod^N_{i=1} \Bigg( \frac{1}{\sqrt{(2 \pi \sigma^2)}} \exp \Big\{ -\frac{1}{2\sigma^2} (y_i - x_i \beta)^2 \Big\} \Bigg)}{f^N(y|x, \beta)} \\
+&= \frac{f^N(y|x, \beta) \cdot \nabla \bigg( -\frac{1}{2\sigma^2} \sum^N_{i=1} (y_i - x_i \beta)^2 \bigg)}{f^N(y|x, \beta)} \\
+&= \frac{f^N(y|x, \beta) \cdot \bigg( -\frac{1}{\sigma^2} \sum^N_{i=1} (y_i - x_i \beta)x_i \bigg)}{f^N(y|x, \beta)} \\
+&= -\frac{1}{\sigma^2} \sum^N_{i=1} (y_i - x_i \beta)x_i.
+\end{aligned}
+$$
+
+
+
+## Integral of $\nabla f^N(y|x, \beta)$
+
+- If we partially differentiate both sides of $\int f^N(y|x, \beta) dy= 1$ w.r.t. $\beta$, \newline
+we have that $\int \nabla f^N(y|x, \beta)dy= 0$.
+\vt
+
+$$
+\begin{aligned}
+\int \nabla f^N(y|x, \beta) \, dy
+&= \int \nabla \prod^N_{i=1} \Bigg( \frac{1}{\sqrt{(2 \pi \sigma^2)}} \exp \Big\{ -\frac{1}{2\sigma^2} (y_i - x_i \beta)^2 \Big\} \Bigg) \, dy \\
+&= \int f^N(y|x, \beta) \, \cdot \nabla \Bigg( -\frac{1}{2\sigma^2} \sum^N_{i=1} (y_i - x_i \beta)^2 \Bigg) \, dy \\
+&= \int f^N(y|x, \beta) \cdot \Bigg( -\frac{1}{\sigma^2} \sum^N_{i=1}(y_i - x_i \beta) x_i \Bigg) \, dy \\
+&= -\frac{1}{\sigma^2}\sum^N_{i=1} x_i \int (y_i - x_i\beta) \, f^N(y|x, \beta) \, dy \\
+&= -\frac{1}{\sigma^2}\sum^N_{i=1} x_i \, E [y_i - x_i \beta] \\
+&= -\frac{1}{\sigma^2}\sum^N_{i=1} x_i \, (x_i\beta - x_i\beta) = 0.
+\end{aligned}
+$$
+
+
+## Expectation of the Score Function
+
+- We have that:
+  
+$$
+\begin{aligned}
+E \nabla \ell \, &= \int \nabla l \, \cdot f^N(y|x, \beta) \, dy \\
+&= \int \frac{\nabla f^N(y|x, \beta)}{f^N(y|x, \beta)} f^N(y|x, \beta) \,dy \\
+&= \int \bigg( -\frac{1}{\sigma^2} \sum^N_{i=1} (y_i - x_i \beta)x_i \bigg) \, f^N(y|x, \beta) \, dy \\
+&= -\frac{1}{\sigma^2}\sum^N_{i=1} x_i \int (y_i - x_i\beta) \, f^N(y|x, \beta) \, dy \\
+&= -\frac{1}{\sigma^2}\sum^N_{i=1} x_i \, E [y_i - x_i \beta] \; = -\frac{1}{\sigma^2}\sum^N_{i=1} x_i \, \big( E[y_i] - x_i\beta \big) \\
+&= -\frac{1}{\sigma^2}\sum^N_{i=1} x_i \, (x_i\beta - x_i\beta) \; = \int \nabla f^N(y|x, \beta) \; dy \; =0.
+\end{aligned}
+$$
+
+
+
+## Differentiation of $E[ \nabla \ell]$
+
+- And
+
+$$
+\begin{aligned}
+0 &= \nabla \otimes [E\nabla \ell] \\
+&= \nabla \otimes \int(\nabla l) f^N(y|x, \beta)dy \\
+&= \int(\nabla^2 l) f^N(y|x, \beta)dy + \int(\nabla l) \{\nabla f^N(y|x, \beta) \}dy \\
+&= \int \nabla \Big\{-\frac{1}{\sigma^2} \sum^N_{i=1} (y_i - x_i \beta)x_i \Big\} f^N(y|x, \beta) \, dy + \int \Big\{ -\frac{1}{\sigma^2} \sum^N_{i=1} (y_i - x_i \beta)x_i \Big\} \, \{ \nabla f^N(y|x, \beta) \} dy \\
+&= \int \frac{1}{\sigma^2} \sum^N_{i=1} x_ix_i^{\top} \, f^N(y|x, \beta) \, dy \, + \, \int \Big\{ -\frac{1}{\sigma^2} \sum^N_{i=1} (y_i - x_i \beta)x_i \Big\} \, \Big\{ -\frac{1}{\sigma^2} \sum^N_{i=1} (y_i - x_i \beta)x_i \Big\} \, dy \\
+&= \frac{1}{\sigma^2} \sum^N_{i=1} x_i x_i^{\top} \, \int f^N(y|x, \beta) \, dy \, + \, \int \Big\{ -\frac{1}{\sigma^2} \sum^N_{i=1} (y_i - x_i \beta)x_i \Big\}^2 \, dy \\
+&= \frac{1}{\sigma^2} \sum^N_{i=1} x_i x_i^{\top} \, + \, \int \Big\{ -\frac{1}{\sigma^2} \sum^N_{i=1} (y_i - x_i \beta)x_i \Big\}^2 \, dy \\
+&= E[\nabla^2 \ell] + E[(\nabla \ell)^2].
+\end{aligned}
+$$
+
+
+
+## The Covariance Matrix $J$ of $\nabla \ell$
+
+- We can verify that it is as follows:
+
+$$
+E[\nabla^2 \ell] + E[(\nabla \ell)^2] = 0.
+$$
+
+$$
+\therefore \, E[(\nabla \ell)^2] = -E[\nabla^2 \ell].
+$$
+\vt
+\vt
+
+- Then, the above equation implies that:
+
+$$
+J = \frac{1}{N}E[(\nabla \ell)^2] = -\frac{1}{N}E[\nabla^2 \ell].
+$$
+
+
+
+# $Cram \acute{e} r-Rao$ Inequality
+
+
+## $Cram \acute{e} r-Rao$ Inequality
+
+- $Cram \acute{e} r-Rao$ inequality is:
+\vt
+  - Inequality that gives a lower bound on the variance of the discomfort estimate.
+\vt
+
+  - It is expressed as the inverse matrix of the fisher information matrix.
+  
+$$
+Var(\tilde{\beta}) \geq (NJ)^{-1}.
+$$
+\vt
+\vt
+
+- $\tilde{\beta} \in \mathbb{R}^{(p+1)}$: unbiased estimator.
+\vt
+
+- $(NJ)^{-1}$: the fisher information matrix $\in \mathbb{R}^{(p+1) \times (p+1)}$.
+
+
+
+## Definition of log-likelihood Function and Score Function
+
+- We defined the log-likelihood function above as follows:
+
+$$
+\ell := \log L = -\frac{N}{2} \log(2 \pi \sigma^2) - \frac{1}{2 \sigma^2} \rVert y - X \beta \lVert^2.
+$$
+
+- And we can also define the score function as the slope of the log-likelihood:
+
+$$
+\nabla \ell:= -\frac{1}{\sigma^2} \sum^N_{i=1} (y_i- x_i \beta)x_i.
+$$
+
+
+
+## Definition of the Fisher Information Matrix
+
+- The fisher information matrix $J$ is expressed as the square of the expectation of the score function.
+
+$$
+J = \frac{1}{N} E[(\nabla \ell)^2] = \frac{1}{N \sigma^4} E[\sum^N_{i=1}(y_i - x_i \beta)^2 x_i]
+$$
+
+- In Gaussian distribution, $E[(y_i - x_i \beta)^2] = \sigma^2$:
+
+$$
+J = \frac{1}{N \sigma^2} \sum^N_{i=1} x_i.
+$$
+
+
+
+## Propositoin of $Cram \acute{e} r-Rao$ Inequality
+
+- The least squares estimate satisfies the equality part of the inequality.
+\vt
+\vt
+
+- We know $\int f^N(y| x, \beta)= 1$ and this end, if we partially differentiate both sides of 
+
+$$
+\int \tilde{\beta_i} f^N(y| x, \beta) dy = \beta_i
+$$
+w.r.t $\beta_j$, we have the following equation:
+
+$$
+\int \tilde{\beta_i} \frac{\partial}{\partial \beta_j} f^N(y| x, \beta)dy = 
+\begin{cases}
+ 1, i=j \\
+ 0, i \neq j
+\end{cases}.
+$$
+
+
+
+## Propositoin of $Cram \acute{e} r-Rao$ Inequality (Contd.)
+
+- If we write this equation in terms of its covariance matrix, we have that $E[\tilde{\beta} (\nabla \ell)^{\top}]= I$, where $I$ is a unit matrix of size $(p+1)$.
+\vt
+\vt
+
+- And we know $E[\nabla \ell]=0$, we rewrite the above equation as follows:
+
+$$
+E[(\tilde{\beta} -\beta)(\nabla \ell)^{\top}] = I.
+$$
+
+
+
+## Propositoin of $Cram \acute{e} r-Rao$ Inequality (Contd.)
+
+- Then, the covariance matrix of the vector of size $2(p+1)$ is:
+
+$$
+\begin{bmatrix}
+V(\tilde{\beta}) & I \\
+I & NJ
+\end{bmatrix}.
+$$
+\vt
+\vt
+
+- Because both $V(\tilde{\beta})$ and $J$ are covariance matrices, they are non-negative definite.
+\vt
+  - Non-negative definite: \newline
+  Let $A$ be an $n \times n$ real symmetric matrix, $A$ is **non-negative definite** if:
+  
+$$
+xAx \geq 0, \; \text{for any} \, x \in \mathbb{R}^n.
+$$
+
+
+
+## Propositoin of $Cram \acute{e} r-Rao$ Inequality (Contd.)
+
+- Then, we claim that both sides of matrixes are non-negative definite:
+
+$$
+\begin{bmatrix}
+V(\tilde{\beta})-(NJ)^{-1} & 0 \\
+0 & NJ
+\end{bmatrix} =
+\begin{bmatrix}
+I & -(NJ)^{-1} \\
+0 & I
+\end{bmatrix}
+\begin{bmatrix}
+V(\tilde{\beta}) & I \\
+I & NJ
+\end{bmatrix}
+\begin{bmatrix}
+I & 0 \\
+-(NJ)^{-1} & I
+\end{bmatrix}.
+$$
+
+- For an arbitrary $x \in \mathbb{R}^n$, if $xAx \geq 0$, for an arbitrary $B \in \mathbb{R}^{n \times m}$ and $y \in \mathbb{R}^m$, we have that $yBABy \geq 0$, which means that $V(\tilde{\beta}) - (NJ)^{-1}$ is non-negative definite.
+\vt
+
+- So, we have the conclusion:
+
+$$
+\therefore V(\tilde{\beta}) \geq (NJ)^{-1}.
+$$
+
+
+
+## Q & A
+
+\begin{center}
+  {\bf {\Huge Q \& A}}
+\end{center}
+
+
+
+## 
+
+\begin{center}
+  {\bf {\Huge Thank you :)}}
+\end{center}
