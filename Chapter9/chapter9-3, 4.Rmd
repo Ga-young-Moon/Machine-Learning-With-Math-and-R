@@ -1,0 +1,483 @@
+---
+title: "Chapter 9. Support Vector Machine"
+subtitle: "9.3 The Solution of Support Vector Machines & 9.4 Extension of Support Vector Machines Using a Kernel"
+author: "Gayoung Moon"
+date: "2025-05-29"
+institute: Descendants of Lagrange \newline School of Mathematics, Statistics and Data Science \newline Sungshin Women’s University
+fonttheme: "serif"
+fontsize: 8pt
+output:
+  beamer_presentation:
+    latex_engine: xelatex 
+    theme: "metropolis"
+header-includes:
+  - \input{header_includes.tex}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# KKT conditions
+
+## KKT(Karush-Kuhn-Tucker) conditions
+
+- KKT conditions are necessary or sufficient conditions that an optimal solution must satisfy in a constrained nonlinear optimization problem.
+\vt
+
+- The KKT conditions are defined for optimization problems with the following constraints:
+
+$$
+\begin{aligned}
+\min_{x \in \mathbb{R}^n} \; &f_0(x) \\
+\text{subject to} \; &f_i(x) \leq0, \; i= 1, \cdots, m \\
+& h_j(x)= 0, \; j= 1, \cdots, p.
+\end{aligned}
+$$
+
+- $f_0(x)$: objective function, \newline
+$f_i(x) \leq 0$: inequality constraints, \newline
+$h_j(x)= 0$: equality constraints.
+
+- And we express with the Lagrange function as:
+$$
+L(x, \alpha_i, \lambda_j):= f_0(x) + \sum_{i=1}^m \alpha_i f_i(x) + \sum^p_{j=1} \lambda_j h_j(x).
+$$
+  
+
+## The Four Conditions of the KKT Conditions
+
+- There are four conditions that must be satisfied for the solution $x^*$ to be the optimal solution:
+\vt
+1) Stationarity condition
+$$
+\nabla f_0(x^*) + \sum_{i=1}^m \alpha_i \nabla f_i(x^*) + \sum^p_{j=1} \lambda_j \nabla h_j(x^*)= 0,
+$$
+\vt
+2) Primal feasibility condition
+$$
+f_i(x^*) \leq 0, \; h_j(x^*)= 0,
+$$
+\vt
+3) Dual feasibility condition
+$$
+\alpha_i \geq 0 \; \text{for all } \, i,
+$$
+\vt
+4) Complementary slackness condition
+$$
+\alpha_i f_i(x^*)=0 \; \text{for all } \, i.
+$$
+
+
+# The Solution of Support Vector Machines
+
+## The Optimal Problem and the KKT Conditions in Support Vector Machine
+
+- In support vector machine, the following optimization problem is solved:
+$$
+\begin{aligned}
+\min_{\beta, \beta_0, \epsilon} \ &\frac{1}{2} \Vert \beta \Vert^2 + C\sum^N_{i=1} \epsilon_i \\
+\text{subject to } \ &y_i(\beta_0 + x_i \beta) \geq 1- \epsilon_i, \\ &\epsilon_i \geq 0 \quad \forall i.
+\end{aligned}
+$$
+\vt
+
+- And the following seven equations are KKT conditions:
+$$
+\begin{array}{c}
+y_i (\beta_0^* + x_i \beta^*) - (1- \epsilon_i^*) \geq 0 \\
+\epsilon_i^* \geq 0 \\[1em]
+\alpha_i [ y_i(\beta_0^* + x_i \beta^*) - (1- \epsilon_i^*) ] = 0 \\
+\mu_i \epsilon_i^* = 0 \\[1em] 
+\beta^*= \sum^N_{i=1} \alpha_i y_i x_i \in \mathbb{R}^p \\
+\sum^N_{i=1} \alpha_i y_i = 0\\
+C- \alpha_i - \mu_i = 0.
+\end{array}
+$$
+
+
+## The KKT Conditions in SVM: Primal Feasibility Condition
+
+- The first two conditions can be derived from the KKT condition (2):
+$$
+f_1(\beta^*), \cdots, f_m(\beta^*) \leq 0.
+$$
+\vt
+
+- In the optimal problem of SVM, the original constraints are as follows:
+$$
+\begin{array}{c}
+y_i(\beta_0 + x_i \beta) \geq 1 - \epsilon_i \quad \forall i= 1, \cdots, N \\
+\epsilon_i \geq 0 \quad \forall i = 1, \cdots, N.
+\end{array}
+$$
+\vt
+
+- Thus, when the above two conditions, which are existing constraints, are satisfied, the optimal solution can be found.
+
+
+## The KKT Conditions in SVM: Complementary Slackness Condition
+
+- The two conditions in the second paragraph are derived from the KKT condition (4):
+$$
+\alpha_1 f_1(\beta^*)= \cdots = \alpha_m f_m(\beta^*)= 0.
+$$
+
+- Based on the optimization problem of SVM, the Lagrangian function is set as follows
+$$
+L_P := \frac{1}{2} \Vert \beta \Vert^2 + C \sum^N_{i=1} \epsilon_i - \sum^N_{i=1} \alpha_i \{ y_i(\beta_0 + x_i \beta) - (1- \epsilon_i) \} - \sum^N_{i=1} \mu_i \epsilon_i,
+$$
+and $\alpha_i$ and $\mu_i$ are the Lagrange multipliers.
+
+
+- The relationship between the original constraints and the Lagrange multipliers $\alpha_i, \ \mu_i$ is as follows
+
+$$
+\begin{array}{c}
+\alpha_i [y_i (\beta_0 + x_i \beta) - (1- \epsilon_i)] = 0 \\
+\mu_i \epsilon_i = 0,
+\end{array}
+$$
+
+then it means that one of the Lagrange multipliers and the constraints must have the value 0.
+
+
+## The KKT Conditions in SVM: Stationarity Condition
+
+- The last three conditions can be derived from the KKT condition (1):
+$$
+\nabla f_0(\beta^*) + \sum^m_{i=1} \alpha_i \nabla f_i (\beta^*)= 0.
+$$
+\vt
+
+- Differentiating $L_P$ w.r.t $\beta, \beta_0, \epsilon_i$:
+$$
+\begin{aligned}
+&\frac{\partial L_P}{\partial \beta}= \beta - \sum^N_{i=1} \alpha_i y_i x_i = 0 \Longrightarrow \beta= \sum^N_{i=1} \alpha_i y_i x_i \\
+&\frac{\partial L_P}{\partial \beta_0}= -\sum^N_{i=1} \alpha_i y_i =0 \\
+&\frac{\partial L_P}{\partial \epsilon_i}= C- \alpha_i - \mu_i = 0.
+\end{aligned}
+$$
+
+- Then we obtain:
+$$
+\begin{array}{c}
+\beta= \sum^N_{i=1} \alpha_i y_i x_i \\
+\sum^N_{i=1} \alpha_i y_i = 0 \\
+C- \alpha_i - \mu_i = 0.
+\end{array}
+$$
+
+
+## SVM Primal Form: Applying KKT Conditions for Simplification
+
+- We can construct the dual problem of $L_P$ from the primal problem.
+
+- If we reconstruct the equation of $L_P$ using the equations differentiated by $\beta_0$ and $\epsilon_i$, we can write it as follows:
+$$
+\begin{aligned}
+L_P &:= \frac{1}{2} \Vert \beta \Vert^2 + C \sum^N_{i=1} \epsilon_i - \sum^N_{i=1} \alpha_i \{ y_i(\beta_0 + x_i \beta) - (1- \epsilon_i) \} - \sum^N_{i=1} \mu_i \epsilon_i \\
+&= \frac{1}{2} \Vert \beta \Vert^2 + C \sum^N_{i=1} \epsilon_i - \sum^N_{i=1} \alpha_i \{ y_i(\beta_0 + x_i \beta) - (1- \epsilon_i) \} - \sum^N_{i=1} (C- \alpha_i)\epsilon_i \\
+&= \frac{1}{2} \Vert \beta \Vert^2 + C \sum^N_{i=1} \epsilon_i - C\sum^N_{i=1} \epsilon_i - \sum^N_{i=1} \alpha_i \{ y_i(\beta_0 + x_i \beta) \} + \sum^N_{i=1}\alpha_i - \sum^N_{i=1} \alpha_i \epsilon_i+ \sum^N_{i=1} \alpha_i \epsilon_i \\
+&= \frac{1}{2} \Vert \beta \Vert^2 - \sum^N_{i=1} \alpha_i \{ y_i(\beta_0 + x_i \beta) \} + \sum^N_{i=1}\alpha_i \\
+&= \frac{1}{2} \Vert \beta \Vert^2 - \beta_0 \sum^N_{i=1} \alpha_i y_i - \sum^N_{i=1} \alpha_i y_i x_i \beta + \sum^N_{i=1}\alpha_i = \frac{1}{2} \Vert \beta \Vert^2 - \sum^N_{i=1} \alpha_i y_i x_i \beta + \sum^N_{i=1}\alpha_i, \\
+&\therefore L_P := \sum^N_{i=1}\alpha_i + \frac{1}{2} \Vert \beta \Vert^2 - \sum^N_{i=1} x_i \beta \alpha_i y_i.
+\end{aligned}
+$$
+
+
+## Formulating the Dual using the Lagrange Multipliers
+
+- The equation of $L_P$, reconstructed by the equation differentiate by $\beta$, change again as follows:
+$$
+\begin{aligned}
+L_P &:= \sum^N_{i=1}\alpha_i + \frac{1}{2} \Vert \beta \Vert^2 - \sum^N_{i=1} x_i \beta \alpha_i y_i \\
+&= \sum^N_{i=1}\alpha_i + \frac{1}{2} \bigg( \sum^N_{i=1} \alpha_i y_i x_i^{\top} \bigg)^{\top} \bigg( \sum^N_{j=1} \alpha_j y_j x_j^{\top} \bigg) - \sum^N_{i=1} x_i \bigg( \sum^N_{i=1} \alpha_i y_i x_i^{\top} \bigg) \alpha_i y_i \\
+&= \sum^N_{i=1}\alpha_i - \frac{1}{2} \bigg( \sum^N_{i=1} \alpha_i y_i x_i^{\top} \bigg)^{\top} \bigg( \sum^N_{j=1} \alpha_j y_j x_j^{\top} \bigg) \\
+&= \sum^N_{i=1}\alpha_i - \frac{1}{2} \sum^N_{i=1} \sum^N_{j=1} \alpha_i \alpha_j y_i y_j x_i x_j^{\top}.
+\end{aligned}
+$$
+
+- So, we construct the function with input as the Lagrange coefficients $\alpha_i  \geq 0, \; i= 1, \cdots, N$:
+$$
+L_D := \sum^N_{i=1}\alpha_i - \frac{1}{2} \sum^N_{i=1} \sum^N_{j=1} \alpha_i \alpha_j y_i y_j x_i x_j^{\top}.
+$$
+
+- In this case, $\alpha$ ranges over $\sum^N_{i=1} \alpha_i y_i$ and $0 \leq \alpha_i \leq C$.
+
+
+## Understanding Constraints in the Dual Problem
+
+- In the dual objective function $L_D$, $\mu_i$ disappears, but the constraint that $\alpha_i$ has a range of $0 \leq \alpha_i \leq C$ still exists through the condition $\mu_i = C- \alpha_i$.
+\vt
+\vt
+
+- By solving the dual problem under this constraint, we can obtain the values of $\alpha_i$. \newline
+Then, the primal variable $\beta$ can be computed using:  
+$$
+\beta = \sum_{i=1}^N \alpha_i y_i x_i
+$$
+\vt
+\vt
+
+- And depending on the range of $\alpha_i$, it can be classified into three cases, which is the key to SVM interpretation.
+
+
+## Solution of the Dual Problem According to $\alpha_i$ Range
+
+- We can distinguish where each sample point is located based on the following three cases of $\alpha_i$: 
+$$
+\begin{cases}
+\alpha_i = 0 \qquad \Longrightarrow y_i(\beta_0 + x_i \beta) > 1 \\
+0 < \alpha_i < C \Longrightarrow y_i(\beta_0 + x_i \beta)= 1 \\
+\alpha_i = C \qquad \Longrightarrow y_i(\beta_0 + x_i \beta) < 1.
+\end{cases}
+$$
+
+
+## Solution of the Dual Problem According to $\alpha_i$ Range (Contd.)
+
+- When $\alpha_i =0$, applying $C- \alpha_i - \mu_i= 0, \ \mu_i \epsilon_i = 0$, and $y_i (\beta_0 + x_i \beta) - (1- \epsilon_i) \geq 0$ in this order, we have:
+$$
+\alpha_i = 0 \Longrightarrow \mu_i = C > 0 \Longrightarrow \epsilon = 0 \Longrightarrow y_i (\beta_0 + x_i \beta) \geq 1.
+$$
+
+- When $0< \alpha_i <C$, from $\mu_i \epsilon_i = 0, \ C- \alpha_i - \mu_i= 0$, we have $\epsilon_i = 0$. Moreover, applying $\alpha_i [y_i (\beta_0 + x_i \beta) - (1- \epsilon_i)] = 0$, we have:
+$$
+0< \alpha_i <C \Longrightarrow y_i (\beta_0 + x_i \beta) - (1- \epsilon_i) = 0 \Longrightarrow y_i (\beta_0 + x_i \beta)=1.
+$$
+
+- When $\alpha_i =C$, from $\epsilon_i \geq 0$, we have $\epsilon_i \geq0$. Moreover, applying $\alpha_i [y_i (\beta_0 + x_i \beta) - (1- \epsilon_i)] = 0$, we have:
+$$
+\alpha_i =C \Longrightarrow y_i (\beta_0 + x_i \beta) - (1- \epsilon_i) = 0 \Longrightarrow y_i (\beta_0 + x_i \beta) \leq 1.
+$$
+
+
+## The Proof of the Optimal Solution in SVM
+
+- As we have seen above, we show that at least one $i$ satisfies $y_i (\beta_0 + x_i \beta) = 1$.
+\vt
+
+- If there exists an $i$ such that $0< \alpha_i < C$ and at least one $\epsilon_i= 0$, then from the above, the $i$ satisfies $y_i(\beta_0 + x_i \beta)= 1$. \newline
+That is, an optimal solution exists, which means that at least one support vector exists. In this case, we can obtain $\beta_0$ as $\beta_0 = y_1 - x_i \beta$.
+
+
+## The Proof of the Optimal Solution in SVM (Contd.)
+
+- Suppose $\alpha_1 = \cdots = \alpha_N = 0$, then we have $\beta = 0$ from $\beta= \sum \alpha_i y_i x_i$. \newline
+Moreover, we have $\mu_i = C$ and $\epsilon_i= 0$, which means $y_i(\beta_0 + x_i \beta) \geq 1$ from $\mu_i \epsilon_i = 0$ and $C- \alpha_i - \mu_i = 0$. \newline
+$\rightarrow$ Therefore, $\beta_0 = \pm 1$ satisfy $y_i(\beta_0 + x_i \beta)= 1$ when $y_i = \pm 1$. It means, there are not just one optimal solution.
+\vt
+\vt
+
+- Next, we suppose that $\alpha_i = C$ for at least one $i$ and $\epsilon_i > 0$ for all $i$. \newline
+If we define $\epsilon_* := \min_i \epsilon_i$, and replace $\epsilon_i \rightarrow \epsilon - \epsilon_*$, $\beta_0 \rightarrow \beta_0^{\prime} + y_i \epsilon_*$, respectively, the latter still satisfies the constraint:
+$$
+\begin{array}{c}
+y_i \{ (\beta_0^{\prime} + y_i \epsilon_*) + x_i \beta \} - \{ 1 - (\epsilon - \epsilon_*) \} \geq 0, \\
+\epsilon - \epsilon_* \geq 0.
+\end{array}
+$$
+$\rightarrow$ Then, we can obtain a smaller value of $f_0(\beta, \beta_0, \epsilon) = \frac{1}{2} \Vert \beta \Vert^2 + C \sum_{i=1}^N \epsilon_i$, which contradicts the underlying assumption that $\beta, \beta_0, \epsilon$ was optimal.
+
+
+## Solving the Dual Problem Using the Package in R
+
+- We solve the dual problem of $L_D$ using a quadratic programming solver.
+\vt
+
+- In the R language, a package called **quadprog** is available for this purpose.
+\vt
+
+- To solve the dual problem in **R**, we transform $L_D = \sum^N_{i=1} \alpha_i - \frac{1}{2} \sum^N_{i, j= 1} \alpha_i \alpha_j y_i y_j x_i x_j^{\top}$ into the following matrix form:
+$$
+\begin{aligned}
+&\text{minimize} \quad -\frac{1}{2} \alpha^{\top} D_{\text{mat}} \alpha + d_{\text{vec}}^{\top} \alpha, \\
+&\text{subject to} \ \quad A_{\text{mat}} \alpha \geq b_{\text{vec}},\ \alpha \in \mathbb{R}^N.
+\end{aligned}
+$$
+
+- $D_{\text{mat}} = (x_i y_i) (x_j y_j)^{\top} \in \mathbb{R}^{N \times N}$, \newline
+$d_{\text{vec}} \in \mathbb{R}^N$: linear term of objective function, \newline
+$A_{\text{mat}} \in \mathbb{R}^{m \times N}$: constraint matrix, \newline
+$b_{\text{vec}} \in \mathbb{R}^m (m \geq 1)$: constrain right side.
+
+
+## Solving the Dual Problem Using the Package in R (Contd.)
+
+- In particular, in the formulation derived above, we take $m= 2N+1, \ meq = 1$,
+$$
+z= 
+\begin{bmatrix}
+x_{1, 1}y_1 & \cdots & x_{1, p} y_1 \\
+\vdots & \vdots & \vdots \\
+x_{N, 1} y_N & \cdots & x_{N, p}y_N
+\end{bmatrix} \in \mathbb{R}^{N \times p}, \ A_{\text{mat}}= 
+\begin{bmatrix}
+y_1 & \cdots & y_N \\
+-1 & \cdots & 0 \\
+0 & \ddots & 0 \\
+0 & \cdots & -1 \\
+1 & \cdots & 0 \\
+0 & \ddots & 0 \\
+0 & \cdots & 1
+\end{bmatrix} \in \mathbb{R}^{(2N+1) \times N},
+$$
+$D_{\text{mat}} = z z^{\top} \in \mathbb{R}^{N \times N}$, $b_{\text{vec}} = [ 0, -C, \cdots, -C, 0, \cdots, 0]^{\top} \in \mathbb{R}^{2N+1}, \ d_{\text{vec}}= [1, \cdots, 1]^{\top} \in \mathbb{R}^N$, and $\alpha= [\alpha_1, \cdots, \alpha_N] \in \mathbb{R}^N$.
+
+```{r, echo= FALSE}
+library(quadprog)
+svm.1 = function(X,y,C){
+eps=0.0001;n=nrow(X);meq=1
+Dmat=matrix(nrow=n,ncol=n)
+for(i in 1:n)for(j in 1:n) Dmat[i,j]=sum(X[i,]*X[j,])*y[i]*y[j]
+Dmat=Dmat+eps*diag(n)
+dvec= rep(1,n)
+Amat=matrix(nrow=(2*n+1),ncol=n);Amat[1,]=y;Amat[2:(n+1),1:n]=-diag(n)
+Amat[(n+2):(2*n+1),1:n]= diag(n); Amat=t(Amat)
+bvec= c(0,rep(-C,n),rep(0,n))
+alpha=solve.QP(Dmat,dvec,Amat,bvec=bvec,meq=1)$solution
+beta=drop((alpha*y)%*%X)
+index=(1:n)[eps<alpha&alpha<C-eps]
+beta.0=mean(y[index]-X[index,]%*%beta)
+return(list(beta=beta,beta.0=beta.0))
+}
+```
+
+
+## [Example 1] Drawing the border of the SVM
+
+- We generate samples and draw the border of the support vector machine.
+```{r}
+set.seed(924)
+library(quadprog)
+a=rnorm(1); b=rnorm(1); n=100;
+X=matrix(rnorm(n*2),ncol=2,nrow=n); y=sign(a*X[,1]+b*X[,2]+0.1*rnorm(n))
+plot(-3:3,-3:3,xlab="First Factor",ylab="Second Factor",
+type="n")
+for(i in 1:n){if(y[i]==1)points(X[i,1],X[i,2],col="red") else points(X[i,1],X[i
+,2],col="blue")}
+qq=svm.1(X,y,10); abline(-qq$beta.0/qq$beta[2],-qq$beta[1]/qq$beta[2])
+```
+
+
+# Extension of Support Vector Machines Using a Kernel
+
+## Using the Kernel Function in SVM
+
+- The reason for solving the dual rather than the primal is that the dual objective $L_D$ can be expressed using inner products $\langle \cdot, \cdot \rangle$ as
+$$
+L_D := \sum^N_{i=1} \alpha_i - \frac{1}{2} \sum^N_{i=1} \sum^N_{j=1} \alpha_i \alpha_j y_i y_j \langle x_i, x_j \rangle.
+$$
+
+- Let $V$ be the vector space with $\phi: \mathbb{R}^p \rightarrow V$, then we may replace $\langle x_i, x_j \rangle$ by $k(x_i, x_j) := \langle \phi(x_i), \phi(x_j) \rangle$.
+\vt
+
+- In such a case, we construct a nonlinear classification rule from $(\phi (x_1), y_1), \cdots, (\phi(x_N), y_N)$. \newline
+$\rightarrow$ In other words, even if the mapping $\phi(x) \rightarrow y$ is linear and the learning is performed via a linear model, the original mapping $x \rightarrow y$ can still be nonlinear.
+
+
+## Using the Kernel Function in SVM (Contd.)
+
+- In the following, we construct a matrix $K$ such that the $(i, j)$-th element is $K_{i, j}= \langle\phi(x_i), \phi(x_j) \rangle \in V$.
+\vt
+\vt
+
+- In fact, for $z \in \mathbb{R}^N$, the matrix
+$$
+\begin{aligned}
+z^{\top} K z &= \sum^N_{i=1} \sum^N_{j=1} z_i \langle \phi(x_i), \phi(x_j) \rangle z_j \\
+&= \langle \sum^N_{i=1} z_i \phi(x_i), \sum^N_{j=1} z_j \phi (x_j) \rangle \\
+&= \Vert \sum^N_{i=1} z_i \phi(x_i) \Vert^2 \geq 0
+\end{aligned}
+$$
+is symmetric and non-negative definite, and $k(\cdot, \cdot)$ is a kernel in the strict sense.
+
+
+## Definition New Function **svm.2** using **svm.1**
+
+- We modify the function **svm.1** as follows to define new function **svm.2**: \newline
+1. add argument **K** to the function definition, \newline
+2. replace sum(X[, i]*X[, j]) with **K(X[i, ], X[j, ])**, \newline
+3. replace **beta** in **return()** with **alpha**.
+
+```{r, echo= FALSE}
+svm.2=function(X,y,C, K){
+eps=0.0001; n=nrow(X); Dmat=matrix(nrow=n,ncol=n)
+
+for(i in 1:n)for(j in 1:n) Dmat[i,j]=K(X[i,],X[j,])*y[i]*y[j]
+Dmat=Dmat+eps*diag(n); dvec=rep(1,n)
+Amat=matrix(nrow=(2*n+1),ncol=n); Amat[1,]=y; Amat[2:(n+1),1:n]=-diag(n);
+Amat[(n+2):(2*n+1),1:n]=diag(n) ; Amat=t(Amat)
+bvec=c(0,rep(-C,n),rep(0,n)); meq=1
+alpha=solve.QP(Dmat,dvec,Amat,bvec=bvec,meq=1)$solution
+index=(1:n)[eps<alpha&alpha<C-eps]
+beta=drop((alpha*y)%*%X); beta.0=mean(y[index]-X[index,]%*%beta)
+return(list(alpha=alpha,beta.0=beta.0))
+}
+```
+
+
+## [Example 2] Comparison of Linear and Nonlinear Borders
+
+- We generate samples and draw linear and nonlinear borders that are flat and curved surfaces.
+
+```{r}
+K.linear <-function(x,y) {return(t(x)%*%y)}
+K.poly <-function(x,y) {return((1+t(x)%*%y)^2)}
+
+library(quadprog)
+# Function Definition
+plot.kernel=function(K, lty){
+qq=svm.2(X,y,1,K); alpha=qq$alpha; beta.0=qq$beta.0
+f=function(u,v){x=c(u,v); S=beta.0; for(i in 1:n)S=S+alpha[i]*y[i]*K(X[i,], x);
+return(S)}
+
+u=seq(-2,2,.1);v=seq(-2,2,.1);w=array(dim=c(41,41))
+for(i in 1:41)for(j in 1:41)w[i,j]=f(u[i],v[j])
+contour(u,v,w,level=0,add=TRUE,lty=lty)
+}
+
+a=3; b=-1
+n=200; X=matrix(rnorm(n*2),ncol=2,nrow=n); y=sign(a*X[,1]+b*X[,2]^2+0.3*
+rnorm(n))
+plot(-3:3,-3:3,xlab="X[,1]",ylab="X[,2]", type="n")
+for(i in 1:n){
+if(y[i]==1)points(X[i,1],X[i,2],col="red")
+else points(X[i,1],X[i,2],col="blue")
+}
+plot.kernel(K.linear,1); plot.kernel(K.poly,2)
+```
+
+
+## [Example 3] Using the **e1071** Package in R
+
+- Using the **e1071** package with the radial kernel, we draw a nonlinear surface.
+\vt
+  - Radial kernel: $K(x_i, x_j)= \exp(-\gamma \Vert x_i - x_j \Vert^2)$
+  
+- We can use **svm** function to specify parameter values such as $\gamma$ and kernel to be used for analysis.
+
+```{r, warning=FALSE, out.width= '87%', fig.align='center'}
+library(e1071)
+x=matrix(rnorm(200*2), ncol=2); x[1:100,]=x[1:100,]+2; x[101:150,]=x[101:150,]-2
+y=c(rep(1,150), rep(2,50)); dat=data.frame(x=x,y=as.factor(y))
+train=sample(200,100)
+svmfit=svm(y~., data=dat[train,], kernel ="radial", gamma=1, cost=100)
+plot(svmfit, dat[train,])
+```
+
+
+## Q & A
+
+\begin{center}
+  {\bf {\Huge Q \& A}}
+\end{center}
+
+
+## 
+
+\begin{center}
+  {\bf {\Huge Thank you :)}}
+\end{center}
